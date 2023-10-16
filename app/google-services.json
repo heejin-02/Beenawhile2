@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "243268812079",
+    "project_id": "beenawhile-35c75",
+    "storage_bucket": "beenawhile-35c75.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:243268812079:android:9482d4e4699173fc5f35da",
+        "android_client_info": {
+          "package_name": "com.example.beenawhile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiTfUv5ojw2eE1LY8QMyxNBMvjQIHwxCQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
