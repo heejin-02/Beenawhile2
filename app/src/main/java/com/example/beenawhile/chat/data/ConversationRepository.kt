@@ -8,7 +8,7 @@ class ConversationRepository {
 
     private var messagesList = mutableListOf(
         Message(
-            text = "Hi, how can I help?",
+            text = "안녕? 나는 챗봇이야.",
             isFromUser = false,
             messageStatus = MessageStatus.Sent
         )
