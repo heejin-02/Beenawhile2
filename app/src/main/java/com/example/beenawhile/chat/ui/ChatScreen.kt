@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
@@ -21,34 +22,45 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.beenawhile.R
 import com.example.beenawhile.chat.data.Conversation
 import com.example.beenawhile.chat.data.Message
 import com.example.beenawhile.chat.data.MessageStatus
 import com.example.beenawhile.utils.HorizontalSpacer
 import com.example.beenawhile.utils.VerticalSpacer
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import kotlinx.coroutines.launch
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.TimeZone
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import com.example.beenawhile.chat.data.ChatRoom
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+
 
 data class ChatScreenUiHandlers(
     val onSendMessage: (String) -> Unit = {},
     val onResendMessage: (Message) -> Unit = {}
 )
+val chatRoomId = "1"
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
+    chatRoomId: String,
     uiHandlers: ChatScreenUiHandlers = ChatScreenUiHandlers(),
     conversation: LiveData<Conversation>,
-    isSendingMessage: LiveData<Boolean>
+    isSendingMessage: LiveData<Boolean>,
+    onBackClicked:() -> Unit //뒤로가기
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var inputValue by remember { mutableStateOf("") }
@@ -121,9 +133,24 @@ fun ChatScreen(
             // 에러 처리
         }
     })
-
+    val navController = rememberNavController()
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Chat Title") },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            // 뒤로가기 버튼 클릭 시 채팅방 목록 화면으로 이동
+                            onBackClicked()
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
         Column(
