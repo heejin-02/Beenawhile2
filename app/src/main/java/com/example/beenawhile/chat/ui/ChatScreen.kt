@@ -1,5 +1,4 @@
-package com.example.beenawhile.chat.ui
-
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,7 +29,14 @@ import com.example.beenawhile.chat.data.Message
 import com.example.beenawhile.chat.data.MessageStatus
 import com.example.beenawhile.utils.HorizontalSpacer
 import com.example.beenawhile.utils.VerticalSpacer
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import kotlinx.coroutines.launch
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone
 
 data class ChatScreenUiHandlers(
     val onSendMessage: (String) -> Unit = {},
@@ -53,13 +59,69 @@ fun ChatScreen(
     val conversationState by conversation.observeAsState()
     val isSendingMessageState by isSendingMessage.observeAsState()
 
+    fun getCurrentTimeUsingDate(): String {
+        val timeZone = TimeZone.getTimeZone("Asia/Seoul")
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+        dateFormat.timeZone = timeZone
+        val currentDate = Date()
+
+        val formattedDate = dateFormat.format(currentDate)
+        return formattedDate
+    }
+
+    // Firebase Realtime Database의 "messages" 레퍼런스를 가져옴
+    val database = FirebaseDatabase.getInstance()
+    val myRef = database.getReference("messages")
+
     fun sendMessage() {
+        // Firebase에 데이터를 쓰기 위한 데이터 모델을 생성
+        val messageText = inputValue
+        val currentTime = getCurrentTimeUsingDate()
+
+        val messageData = hashMapOf(
+            "message" to messageText,
+            "time" to currentTime,
+            "isFromUser" to true
+            // 여기에 다른 필요한 데이터도 추가할 수 있음
+        )
+
+        // "messages" 레퍼런스에 데이터를 저장
+        myRef.push().setValue(messageData)
+
         uiHandlers.onSendMessage(inputValue)
         inputValue = ""
         coroutineScope.launch {
             listState.animateScrollToItem(conversationState?.list?.size ?: 0)
         }
     }
+
+    myRef.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val dataList = mutableListOf<Pair<String, DataSnapshot>>()
+
+            // 데이터베이스의 모든 자식 노드를 가져옴
+            snapshot.children.forEach { childSnapshot ->
+                // 각 자식 노드의 "time" 속성 값을 가져와 Pair에 저장
+                val time = childSnapshot.child("time").getValue(String::class.java)
+                time?.let {
+                    dataList.add(it to childSnapshot)
+                }
+            }
+
+            // 데이터를 시간대순으로 정렬
+            dataList.sortBy { it.first }
+
+            // 정렬된 데이터를 로그에 출력
+            for ((_, childSnapshot) in dataList) {
+                Log.d("test", "Data: ${childSnapshot.value}")
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            // 에러 처리
+        }
+    })
+
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
