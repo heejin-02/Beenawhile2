@@ -3,10 +3,14 @@ package com.example.beenawhile.chat.ui
 import ChatListScreen
 import ChatScreen
 import ChatScreenUiHandlers
+import CreateChatRoomDialog
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,25 +24,9 @@ import org.koin.androidx.viewmodel.ext.android.stateViewModel
 
 class ChatActivity : ComponentActivity() {
 
-    val chatRooms: List<ChatRoom> = listOf(
-        ChatRoom("1", "Chat Room 1"),
-        ChatRoom("2", "Chat Room 2"),
-        ChatRoom("3", "Chat Room 3"),
-        ChatRoom("4", "Chat Room 4"),
-        ChatRoom("5", "Chat Room 5"),
-        ChatRoom("6", "Chat Room 6"),
-        ChatRoom("7", "Chat Room 7"),
-        ChatRoom("8", "Chat Room 8"),
-        ChatRoom("9", "Chat Room 9"),
-        ChatRoom("10", "Chat Room 10"),
-        ChatRoom("11", "Chat Room 11"),
-        ChatRoom("12", "Chat Room 12"),
-        ChatRoom("13", "Chat Room 13"),
-        ChatRoom("14", "Chat Room 14"),
-        ChatRoom("15", "Chat Room 15"),
-        ChatRoom("16", "Chat Room 16")
+    private var onCreateChatRoomClicked by mutableStateOf(false) // onCreateChatRoomClicked 변수를 클래스 수준에 선언
 
-    )
+    val chatRooms: MutableList<ChatRoom> = mutableListOf() // chatRooms를 MutableList로 선언
 
     private val viewModel: ChatViewModel by stateViewModel(
         state = { intent?.extras ?: Bundle() }
@@ -58,6 +46,10 @@ class ChatActivity : ComponentActivity() {
                             chatRooms = chatRooms,
                             onChatRoomClicked = { chatRoomId ->
                                 navController.navigate("chatRoom/$chatRoomId")
+                            },
+                            onCreateChatRoomClicked = {
+                                // '+ 버튼' 클릭 시 실행될 코드
+                                onCreateChatRoomClicked = true
                             }
                         )
                     }
@@ -65,6 +57,7 @@ class ChatActivity : ComponentActivity() {
                         "chatRoom/{chatRoomId}",
                         arguments = listOf(navArgument("chatRoomId") { type = NavType.StringType })
                     ) { backStackEntry ->
+                        // ChatScreen 내용은 그대로 두시고 onCreateChatRoomClicked 변수만 추가
                         val chatRoomId = backStackEntry.arguments?.getString("chatRoomId")
                         ChatScreen(
                             chatRoomId = chatRoomId ?: "",
@@ -76,10 +69,24 @@ class ChatActivity : ComponentActivity() {
                             isSendingMessage = viewModel.isSendingMessage,
                             onBackClicked = {
                                 navController.popBackStack()
-                            }
+                            },
+
                         )
                     }
                 }
+                // 추가: CreateChatRoomDialog를 Create Chat Room 버튼 클릭 시 표시
+                CreateChatRoomDialog(
+                    showDialog = onCreateChatRoomClicked,
+                    onDialogDismiss = {
+                        onCreateChatRoomClicked = false
+                    },
+                    onCreateChatRoom = {
+                        // 새로운 채팅방 생성 및 chatRooms 목록에 추가하는 로직 추가
+                        // ChatRoom 객체를 생성하고 chatRooms 목록에 추가
+                        val newChatRoom = ChatRoom((chatRooms.size + 1).toString(), "Chat Room ${chatRooms.size + 1}")
+                        chatRooms.add(newChatRoom)
+                    }
+                )
             }
         }
     }

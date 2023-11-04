@@ -2,29 +2,42 @@ package com.example.beenawhile.chat.ui
 
 import ChatListScreen
 import ChatScreen
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.*
-import chatRooms
+import com.example.beenawhile.chat.data.ChatRoom
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun NavGraph(startDestination: String = "chatList") {
+fun NavGraph(
+    startDestination: String = "chatList",
+    chatRooms: List<ChatRoom>,
+) {
     val navController = rememberNavController()
+    val chatRoomsState = remember { mutableStateListOf(*chatRooms.toTypedArray()) }
+
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
         composable("chatList") {
-            // ChatListScreen을 표시
             ChatListScreen(
-                chatRooms = chatRooms, // chatRooms 데이터 추가
+                chatRooms = chatRoomsState,
                 onChatRoomClicked = { chatRoomId ->
                     navController.navigate("chatRoom/$chatRoomId")
+                },
+                onCreateChatRoomClicked = {
+                    // 새 채팅방을 추가할 때, chatRoomsState를 업데이트
+                    val newChatRoom = ChatRoom((chatRoomsState.size + 1).toString(), "Chat Room ${chatRoomsState.size + 1}")
+                    chatRoomsState.add(newChatRoom)
                 }
             )
         }
@@ -37,15 +50,13 @@ fun NavGraph(startDestination: String = "chatList") {
             val chatViewModel = viewModel<ChatViewModel>() // ChatViewModel 가져오기
 
             if (chatRoomId != null) {
-                // ChatRoom 화면을 표시
                 ChatScreen(
                     chatRoomId = chatRoomId,
-                    conversation = chatViewModel.conversation, // conversation 데이터 추가 (LiveData 객체 그대로 전달)
-                    isSendingMessage = chatViewModel.isSendingMessage, // isSendingMessage 데이터 추가 (LiveData 객체 그대로 전달)
-                    onBackClicked = { navController.popBackStack() } // onBackClicked 데이터 추가
+                    conversation = chatViewModel.conversation,
+                    isSendingMessage = chatViewModel.isSendingMessage,
+                    onBackClicked = { navController.popBackStack() }
                 )
             }
-
         }
     }
 }
