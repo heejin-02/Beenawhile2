@@ -29,9 +29,11 @@ class OpenAIRepository(private val openAI: OpenAI) {
         val chatMessage = openAI.chatCompletion(chatCompletionRequest).choices.first().message
             ?: throw NoChoiceAvailableException()
 
+        val currentRoomNum = RoomNumInstance.instance.roomnum //현재 채팅방의 id를 가져옴
+
         // Firebase Realtime Database의 "messages" 레퍼런스를 가져옴
         val database = FirebaseDatabase.getInstance()
-        val myRef = database.getReference("messages")
+        val myRef = database.getReference(currentRoomNum)
 
         // Firebase에 데이터를 쓰기 위한 데이터 모델을 생성
         val currentTime = getCurrentTimeUsingDate()
