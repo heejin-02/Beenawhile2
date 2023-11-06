@@ -55,7 +55,6 @@ class ChatActivity : ComponentActivity() {
                         "chatRoom/{chatRoomId}",
                         arguments = listOf(navArgument("chatRoomId") { type = NavType.StringType })
                     ) { backStackEntry ->
-                        // ChatScreen 내용은 그대로 두시고 onCreateChatRoomClicked 변수만 추가
                         val chatRoomId = backStackEntry.arguments?.getString("chatRoomId")
                         ChatScreen(
                             chatRoomId = chatRoomId ?: "",
@@ -72,7 +71,7 @@ class ChatActivity : ComponentActivity() {
                         )
                     }
                 }
-                // 추가: CreateChatRoomDialog를 Create Chat Room 버튼 클릭 시 표시
+                //CreateChatRoomDialog를 Create Chat Room 버튼 클릭 시 표시
                 CreateChatRoomDialog(
                     showDialog = onCreateChatRoomClicked,
                     onDialogDismiss = {
