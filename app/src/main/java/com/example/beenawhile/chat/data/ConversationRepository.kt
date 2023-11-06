@@ -6,13 +6,7 @@ import java.util.UUID
 
 class ConversationRepository {
 
-    private var messagesList = mutableListOf(
-        Message(
-            text = "Hi, how can I help?",
-            isFromUser = false,
-            messageStatus = MessageStatus.Sent
-        )
-    )
+    private var messagesList = mutableListOf<Message>()
 
     private val _conversationFlow = MutableStateFlow(
         value = Conversation(list = messagesList)

@@ -5,7 +5,6 @@ import ChatScreen
 import ChatScreenUiHandlers
 import CreateChatRoomDialog
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.getValue
@@ -18,7 +17,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.beenawhile.chat.data.ChatRoom
 import com.example.beenawhile.ui.ChatGptBotAppTheme
-import com.example.beenawhile.chat.ui.ChatViewModel
 import org.koin.androidx.viewmodel.ext.android.stateViewModel
 
 
@@ -89,11 +87,5 @@ class ChatActivity : ComponentActivity() {
                 )
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // 여기서 앱이 활성화될 때마다 수행할 작업을 작성하십시오.
-        Log.d("ActivityLifecycle", "앱이 활성화되었습니다.")
     }
 }

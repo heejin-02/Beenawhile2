@@ -14,6 +14,13 @@ import com.example.beenawhile.chat.data.ChatRoom
 import com.example.beenawhile.chat.ui.ChatRoomItem
 
 
+class RoomNum{
+    var roomnum: String = ""
+}
+
+object RoomNumInstance {
+    val instance = RoomNum()
+}
 
 @Composable
 fun ChatListScreen(
@@ -28,6 +35,8 @@ fun ChatListScreen(
                 chatRoom = chatRoom,
                 onItemClick = {
                     onChatRoomClicked(chatRoom.id) // 채팅방 클릭 시 ChatScreen으로 이동
+                    RoomNumInstance.instance.roomnum = chatRoom.id //roomnum 변수의 값을 채팅방 id로 설정
+                    FirebaseDataFetcher.fetchData() //fetchData 함수를 실행하여, 저장되어있는 채팅 내역 출력
                 }
             )
         }
