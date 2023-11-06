@@ -22,10 +22,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.beenawhile.R
 import com.example.beenawhile.chat.data.Conversation
 import com.example.beenawhile.chat.data.Message
@@ -37,10 +35,7 @@ import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.TimeZone
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavType
-import com.example.beenawhile.chat.data.ChatRoom
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -51,7 +46,6 @@ data class ChatScreenUiHandlers(
     val onResendMessage: (Message) -> Unit = {}
 )
 val chatRoomId = "1"
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,9 +75,11 @@ fun ChatScreen(
         return formattedDate
     }
 
+    val currentRoomNum = RoomNumInstance.instance.roomnum //현재 채팅방의 id를 가져옴
+
     // Firebase Realtime Database의 "messages" 레퍼런스를 가져옴
     val database = FirebaseDatabase.getInstance()
-    val myRef = database.getReference("messages")
+    val myRef = database.getReference(currentRoomNum)
 
     fun sendMessage() {
         // Firebase에 데이터를 쓰기 위한 데이터 모델을 생성
@@ -106,33 +102,6 @@ fun ChatScreen(
             listState.animateScrollToItem(conversationState?.list?.size ?: 0)
         }
     }
-
-    myRef.addValueEventListener(object : ValueEventListener {
-        override fun onDataChange(snapshot: DataSnapshot) {
-            val dataList = mutableListOf<Pair<String, DataSnapshot>>()
-
-            // 데이터베이스의 모든 자식 노드를 가져옴
-            snapshot.children.forEach { childSnapshot ->
-                // 각 자식 노드의 "time" 속성 값을 가져와 Pair에 저장
-                val time = childSnapshot.child("time").getValue(String::class.java)
-                time?.let {
-                    dataList.add(it to childSnapshot)
-                }
-            }
-
-            // 데이터를 시간대순으로 정렬
-            dataList.sortBy { it.first }
-
-            // 정렬된 데이터를 로그에 출력
-            for ((_, childSnapshot) in dataList) {
-                Log.d("test", "Data: ${childSnapshot.value}")
-            }
-        }
-
-        override fun onCancelled(error: DatabaseError) {
-            // 에러 처리
-        }
-    })
     val navController = rememberNavController()
 
     Scaffold(
@@ -284,5 +253,41 @@ fun MessageList(
             }
             VerticalSpacer(height = 8.dp)
         }
+    }
+}
+
+object FirebaseDataFetcher {
+    fun fetchData() {
+        val currentRoomNum = RoomNumInstance.instance.roomnum
+        val database = FirebaseDatabase.getInstance()
+        val myRef = database.getReference(currentRoomNum)
+
+        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val dataList = mutableListOf<Pair<String, DataSnapshot>>()
+
+                // 데이터베이스의 모든 자식 노드를 가져옴
+                snapshot.children.forEach { childSnapshot ->
+                    // 각 자식 노드의 "time" 속성 값을 가져와 Pair에 저장
+                    val time = childSnapshot.child("time").getValue(String::class.java)
+                    time?.let {
+                        dataList.add(it to childSnapshot)
+                    }
+                }
+
+                // 데이터를 시간대순으로 정렬
+                dataList.sortBy { it.first }
+
+                // 정렬된 데이터를 로그에 출력
+                for ((_, childSnapshot) in dataList) {
+                    Log.d("FirebaseData", "Data: ${childSnapshot.value}")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // 에러 처리
+                Log.e("FirebaseData", "Error fetching data", error.toException())
+            }
+        })
     }
 }
