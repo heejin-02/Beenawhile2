@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import chatRoomId
 import com.example.beenawhile.chat.data.Conversation
 import com.example.beenawhile.chat.data.Message
 import com.example.beenawhile.chat.data.MessageStatus
@@ -11,6 +12,7 @@ import com.example.beenawhile.chat.domain.usecase.ObserveMessagesUseCase
 import com.example.beenawhile.chat.domain.usecase.ResendMessageUseCase
 import com.example.beenawhile.chat.domain.usecase.SendChatRequestUseCase
 import kotlinx.coroutines.launch
+import com.google.firebase.database.*
 
 class ChatViewModel(
     private val sendChatRequestUseCase: SendChatRequestUseCase,
@@ -40,11 +42,13 @@ class ChatViewModel(
         }
     }
 
-    fun sendMessage(prompt: String) {
+    fun sendMessage(chatRoomId: String, prompt: String) {
         viewModelScope.launch {
             sendChatRequestUseCase(
+                chatRoomId,
                 prompt
             )
+
         }
     }
 
@@ -53,6 +57,16 @@ class ChatViewModel(
             resendChatRequestUseCase(
                 message
             )
+
         }
     }
-}
+    // Firebase에서 데이터를 가져와서 LiveData를 업데이트하는 함수
+    private fun updateConversationFromFirebase() {
+        FirebaseDataFetcher.fetchData(chatRoomId) { dataList: List<Message> ->
+            // 가져온 데이터를 Conversation 객체로 변환하여 LiveData를 업데이트
+            val conversation = Conversation(list = dataList)
+            _conversation.postValue(conversation)
+
+        }
+    }
+    }

@@ -17,7 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.beenawhile.chat.data.ChatRoom
+import com.example.beenawhile.chat.data.ChatRoomIdGenerator
 import com.example.beenawhile.chat.ui.ChatRoomItem
+import com.example.beenawhile.chat.ui.FirebaseDataFetcher
+import com.google.firebase.database.*
+
 
 
 class RoomNum{
@@ -34,7 +38,8 @@ fun ChatListScreen(
     onChatRoomClicked: (chatRoomId: String) -> Unit,
     onCreateChatRoomClicked: () -> Unit//버튼 클릭 이벤트
 ) {
-    val chatRoomsState = remember { mutableStateListOf(*chatRooms.toTypedArray()) } // chatRooms를 변경 가능한 State로 초기화
+    val chatRoomsState = remember { mutableStateListOf(*chatRooms.toTypedArray()) }
+
     LazyColumn {
         items(chatRooms) { chatRoom ->
             ChatRoomItem(
@@ -47,13 +52,18 @@ fun ChatListScreen(
             )
         }
     }
+
     Box(
         contentAlignment = Alignment.BottomEnd,
         modifier = Modifier.fillMaxSize()
     ) {
         FloatingActionButton(
             onClick = {
-                chatRoomsState.add(ChatRoom((chatRoomsState.size + 1).toString(), "Chat Room ${chatRoomsState.size + 1}"))
+                val newChatRoom = ChatRoom(
+                    id = ChatRoomIdGenerator.generateId(),
+                    name = "Chat Room ${chatRoomsState.size + 1}"
+                )
+                chatRoomsState.add(newChatRoom)
                 onCreateChatRoomClicked()
             },
             content = {

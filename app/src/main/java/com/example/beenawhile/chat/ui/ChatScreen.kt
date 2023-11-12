@@ -39,12 +39,15 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.example.beenawhile.chat.ui.ChatViewModel
+import com.example.beenawhile.chat.ui.FirebaseDataFetcher
 
 
 data class ChatScreenUiHandlers(
-    val onSendMessage: (String) -> Unit = {},
+    val onSendMessage: (String, String) -> Unit = { _, _ -> },
     val onResendMessage: (Message) -> Unit = {}
 )
+
 val chatRoomId = "1"
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +68,8 @@ fun ChatScreen(
     val conversationState by conversation.observeAsState()
     val isSendingMessageState by isSendingMessage.observeAsState()
 
+
+
     fun getCurrentTimeUsingDate(): String {
         val timeZone = TimeZone.getTimeZone("Asia/Seoul")
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
@@ -80,6 +85,15 @@ fun ChatScreen(
     // Firebase Realtime Database의 "messages" 레퍼런스를 가져옴
     val database = FirebaseDatabase.getInstance()
     val myRef = database.getReference(currentRoomNum)
+    val conversation = remember { mutableStateOf(Conversation(listOf())) }
+    val firebaseDataFetcher = FirebaseDataFetcher(conversation)
+
+    LaunchedEffect(Unit) {
+        firebaseDataFetcher.fetchData(chatRoomId) { messagesList ->
+            conversation.value = Conversation(messagesList)
+        }
+    }
+
 
     fun sendMessage() {
         // Firebase에 데이터를 쓰기 위한 데이터 모델을 생성
@@ -256,38 +270,3 @@ fun MessageList(
     }
 }
 
-object FirebaseDataFetcher {
-    fun fetchData() {
-        val currentRoomNum = RoomNumInstance.instance.roomnum
-        val database = FirebaseDatabase.getInstance()
-        val myRef = database.getReference(currentRoomNum)
-
-        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val dataList = mutableListOf<Pair<String, DataSnapshot>>()
-
-                // 데이터베이스의 모든 자식 노드를 가져옴
-                snapshot.children.forEach { childSnapshot ->
-                    // 각 자식 노드의 "time" 속성 값을 가져와 Pair에 저장
-                    val time = childSnapshot.child("time").getValue(String::class.java)
-                    time?.let {
-                        dataList.add(it to childSnapshot)
-                    }
-                }
-
-                // 데이터를 시간대순으로 정렬
-                dataList.sortBy { it.first }
-
-                // 정렬된 데이터를 로그에 출력
-                for ((_, childSnapshot) in dataList) {
-                    Log.d("FirebaseData", "Data: ${childSnapshot.value}")
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // 에러 처리
-                Log.e("FirebaseData", "Error fetching data", error.toException())
-            }
-        })
-    }
-}
