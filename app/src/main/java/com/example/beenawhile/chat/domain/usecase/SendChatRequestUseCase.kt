@@ -12,6 +12,7 @@ class SendChatRequestUseCase(
 ) {
 
     suspend operator fun invoke(
+        chatRoomId: String,
         prompt: String
     ) {
         val message = Message(
