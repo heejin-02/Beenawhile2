@@ -8,7 +8,7 @@ class ConversationRepository {
 
     private var messagesList = mutableListOf(
         Message(
-            text = "Hi, how can I help?",
+            text = "안녕?",
             isFromUser = false,
             messageStatus = MessageStatus.Sent
         )
@@ -56,6 +56,7 @@ class ConversationRepository {
 
         return conversation
     }
+
 }
 
 class Conversation(

@@ -1,13 +1,16 @@
 package com.example.beenawhile.chat.ui
 import android.util.Log
 import androidx.compose.runtime.MutableState
+import androidx.lifecycle.MutableLiveData
+import chatRoomId
 import com.example.beenawhile.chat.data.Conversation
 import com.example.beenawhile.chat.data.Message
 import com.google.firebase.database.*
+import com.example.beenawhile.chat.data.ConversationRepository
 
-class FirebaseDataFetcher(private val _conversation: MutableState<Conversation>) {
+class FirebaseDataFetcher(private val onDataFetched: (List<Message>) -> Unit) {
 
-    fun fetchData(chatRoomId: String, callback: (List<Message>) -> Unit) {
+    fun fetchData(chatRoomId: String) {
         val database = FirebaseDatabase.getInstance()
         val myRef = database.getReference(chatRoomId)
 
@@ -24,9 +27,8 @@ class FirebaseDataFetcher(private val _conversation: MutableState<Conversation>)
                     }
                 }
 
-                // LiveData를 통해 UI에 데이터를 전달
-                updateConversation(dataList)
-                callback(dataList)
+                // UI에 데이터를 전달
+                onDataFetched(dataList)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -36,13 +38,11 @@ class FirebaseDataFetcher(private val _conversation: MutableState<Conversation>)
         })
     }
 
-    private fun updateConversation(dataList: List<Message>) {
-        val conversation = Conversation(list = dataList)
-        _conversation.value = conversation
+    fun fetchDataAndUpdate(chatRoomId: String) {
+        fetchData(chatRoomId)
     }
+
+
 }
-
-
-
 
 
