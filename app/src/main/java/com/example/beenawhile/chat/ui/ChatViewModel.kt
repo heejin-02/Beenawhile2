@@ -29,6 +29,7 @@ class ChatViewModel(
     val isSendingMessage: LiveData<Boolean> = _isSendingMessage
 
     init {
+        fetchDataAndUpdate()
         observeMessageList()
     }
 
@@ -63,6 +64,10 @@ class ChatViewModel(
 
     // Firebase에서 데이터를 가져와서 LiveData를 업데이트하는 함수
     private fun updateConversationFromFirebase() {
+        firebaseDataFetcher.fetchDataAndUpdate(chatRoomId)
+    }
+    private fun fetchDataAndUpdate() {
+        // 이전 데이터를 불러오기 위해 fetchAndUpdate 호출
         firebaseDataFetcher.fetchDataAndUpdate(chatRoomId)
     }
 }

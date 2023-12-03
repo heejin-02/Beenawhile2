@@ -9,6 +9,7 @@ class FirebaseDataFetcher(private val onDataFetched: (List<Message>) -> Unit) {
     fun fetchData(chatRoomId: String) {
         val database = FirebaseDatabase.getInstance()
         val myRef = database.getReference(chatRoomId)
+        val currentRoomNum = RoomNumInstance.instance.roomnum
 
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
