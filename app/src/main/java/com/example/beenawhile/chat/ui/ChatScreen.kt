@@ -86,13 +86,16 @@ fun ChatScreen(
     val database = FirebaseDatabase.getInstance()
     val myRef = database.getReference(currentRoomNum)
     val conversation = remember { mutableStateOf(Conversation(listOf())) }
-    val firebaseDataFetcher = FirebaseDataFetcher(conversation)
+    val firebaseDataFetcher = FirebaseDataFetcher { messagesList ->
+        // 이 부분에서 원하는 작업 수행
+        conversation.value = Conversation(messagesList)
+    }
 
     LaunchedEffect(Unit) {
-        firebaseDataFetcher.fetchData(chatRoomId) { messagesList ->
-            conversation.value = Conversation(messagesList)
-        }
+        firebaseDataFetcher.fetchData(chatRoomId)
     }
+
+
 
 
     fun sendMessage() {
@@ -110,7 +113,7 @@ fun ChatScreen(
         // "messages" 레퍼런스에 데이터를 저장
         myRef.push().setValue(messageData)
 
-        uiHandlers.onSendMessage(inputValue)
+        uiHandlers.onSendMessage(chatRoomId, inputValue)
         inputValue = ""
         coroutineScope.launch {
             listState.animateScrollToItem(conversationState?.list?.size ?: 0)
