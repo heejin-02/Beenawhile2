@@ -1,5 +1,6 @@
 package com.example.beenawhile.chat.data.api
 
+import RoomNumInstance
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatMessage
@@ -10,6 +11,7 @@ import com.example.beenawhile.chat.data.Conversation
 import com.example.beenawhile.chat.data.Message
 import com.example.beenawhile.chat.data.MessageStatus
 import com.google.firebase.database.FirebaseDatabase
+import modelIdMap
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.TimeZone
@@ -22,7 +24,7 @@ class OpenAIRepository(private val openAI: OpenAI) {
         conversation: Conversation
     ) : Message {
         val chatCompletionRequest = ChatCompletionRequest(
-            model = ModelId("gpt-3.5-turbo"),
+            model = ModelId(modelIdMap[RoomNumInstance.instance.roomnum].toString()),
             messages = conversation.toChatMessages()
         )
 

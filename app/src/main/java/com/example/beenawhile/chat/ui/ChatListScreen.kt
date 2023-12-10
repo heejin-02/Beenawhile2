@@ -1,32 +1,32 @@
-import android.util.Log
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.example.beenawhile.chat.data.ChatRoom
 import com.example.beenawhile.chat.data.ChatRoomIdGenerator
-import com.example.beenawhile.chat.data.Message
 import com.example.beenawhile.chat.ui.ChatRoomItem
-import com.example.beenawhile.chat.ui.FirebaseDataFetcher
+import com.example.beenawhile.chat.ui.chatRooms
 import com.google.firebase.database.*
-import kotlinx.coroutines.launch
 
+val modelIdMap = mutableMapOf<String, String>()
 
 class RoomNum{
     var roomnum: String = ""
@@ -77,12 +77,15 @@ fun ChatListScreen(
     }
 
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateChatRoomDialog(
     showDialog: Boolean,
     onDialogDismiss: () -> Unit,
     onCreateChatRoom: () -> Unit
 ) {
+    var showNewDialog by remember { mutableStateOf(false) }
+
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { onDialogDismiss() },
@@ -91,7 +94,7 @@ fun CreateChatRoomDialog(
                 TextButton(
                     onClick = {
                         onDialogDismiss()
-                        onCreateChatRoom()
+                        showNewDialog = true
                     }
                 ) {
                     Text("네")
@@ -106,10 +109,39 @@ fun CreateChatRoomDialog(
             }
         )
     }
-}
-@Composable
-fun updateUIWithData(dataList: List<Message>) {
-    // 가져온 데이터를 사용하거나 처리하는 로직을 여기에 추가
-    // 여기서는 간단히 로그를 출력하도록 했습니다.
-    Log.d("ChatListScreen", "Data fetched: $dataList")
+
+    if (showNewDialog) {
+        var modelId by remember { mutableStateOf("") }
+
+        AlertDialog(
+            onDismissRequest = { showNewDialog = false },
+            title = { Text("대화할 모델의 ID를 입력하십시오.") },
+            text = {
+                Column {
+                    TextField(
+                        value = modelId,
+                        onValueChange = { modelId = it }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showNewDialog = false
+                        modelIdMap[(chatRooms.size + 1).toString()] = modelId
+                        onCreateChatRoom()
+                    }
+                ) {
+                    Text("확인")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showNewDialog = false }
+                ) {
+                    Text("취소")
+                }
+            }
+        )
+    }
 }

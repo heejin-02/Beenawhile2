@@ -19,12 +19,11 @@ import com.example.beenawhile.chat.data.ChatRoom
 import com.example.beenawhile.ui.ChatGptBotAppTheme
 import org.koin.androidx.viewmodel.ext.android.stateViewModel
 
+val chatRooms: MutableList<ChatRoom> = mutableListOf() // chatRooms를 MutableList로 선언
 
 class ChatActivity : ComponentActivity() {
 
     private var onCreateChatRoomClicked by mutableStateOf(false) // onCreateChatRoomClicked 변수를 클래스 수준에 선언
-
-    val chatRooms: MutableList<ChatRoom> = mutableListOf() // chatRooms를 MutableList로 선언
 
     private val viewModel: ChatViewModel by stateViewModel(
         state = { intent?.extras ?: Bundle() }
