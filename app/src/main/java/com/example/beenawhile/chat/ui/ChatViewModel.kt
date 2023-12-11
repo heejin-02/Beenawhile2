@@ -19,7 +19,7 @@ class ChatViewModel(
     private val sendChatRequestUseCase: SendChatRequestUseCase,
     private val resendChatRequestUseCase: ResendMessageUseCase,
     private val observeMessagesUseCase: ObserveMessagesUseCase,
-    private val firebaseDataFetcher: FirebaseDataFetcher, // Inject the dependency here
+    private val firebaseDataFetcher: FirebaseDataFetcher,
 ) : ViewModel() {
 
     private val _conversation = MutableLiveData<Conversation>()
@@ -29,6 +29,7 @@ class ChatViewModel(
     val isSendingMessage: LiveData<Boolean> = _isSendingMessage
 
     init {
+        updateConversationFromFirebase()
         fetchDataAndUpdate()
         observeMessageList()
     }

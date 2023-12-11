@@ -28,7 +28,6 @@ val chatModule = module {
     single { ObserveMessagesUseCase(conversationRepository = get()) }
     single<FirebaseDataFetcher> {
         FirebaseDataFetcher { messagesList ->
-            // Do something with the fetched data if needed
         }
     }
 }
